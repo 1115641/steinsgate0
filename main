@@ -101,5 +101,50 @@ plt.legend()
 plt.savefig('hour_distribution.png', dpi=150)
 plt.close()
 print("已保存24小时分布图表：hour_distribution.png")
+# ====================== 任务3：线路站点分析（20分） ======================
+print("\n" + "="*50)
+print("任务3：线路站点分析")
+print("="*50)
 
+# 严格按照要求定义函数，不可修改签名
+def analyze_route_stops(df, route_col='线路号', stops_col='ride_stops'):
+    """
+    计算各线路乘客的平均搭乘站点数及其标准差。
+    Parameters
+    ----------
+    df : pd.DataFrame  预处理后的数据集
+    route_col : str    线路号列名
+    stops_col : str    搭乘站点数列名
+    Returns
+    -------
+    pd.DataFrame  包含列：线路号、mean_stops、std_stops，按 mean_stops 降序排列
+    """
+    # 分组计算均值和标准差
+    result = df.groupby(route_col)[stops_col].agg(['mean', 'std']).reset_index()
+    # 重命名列
+    result.columns = ['线路号', 'mean_stops', 'std_stops']
+    # 按均值降序排列
+    result = result.sort_values('mean_stops', ascending=False)
+    return result
+
+# 调用函数
+route_stops_df = analyze_route_stops(df_onboard)
+print("各线路平均搭乘站点数（前10行）：")
+print(route_stops_df.head(10))
+
+# 可视化：前15条线路水平条形图（seaborn）
+top15_routes = route_stops_df.head(15)
+plt.figure(figsize=(12, 8))
+sns.barplot(x='mean_stops', y='线路号', data=top15_routes,
+            palette='Blues_d',
+            xerr=top15_routes['std_stops'],
+            capsize=0.3)
+plt.title('Top15线路平均搭乘站点数', fontsize=14)
+plt.xlabel('平均搭乘站点数', fontsize=12)
+plt.ylabel('线路号', fontsize=12)
+plt.xlim(0, top15_routes['mean_stops'].max() + 2)  # x轴从0开始
+plt.tight_layout()
+plt.savefig('route_stops.png', dpi=150)
+plt.close()
+print("已保存线路站点分析图表：route_stops.png")
 
