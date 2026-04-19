@@ -183,5 +183,36 @@ max_fifteen_window = fifteen_min_count.idxmax()
 phf15 = peak_count / (4 * max_fifteen)
 print(f"最大15分钟刷卡量（{peak_hour:02d}:{max_fifteen_window:02d}~{peak_hour:02d}:{max_fifteen_window+15:02d}）：{max_fifteen} 次")
 print(f"PHF15 = {peak_count} / (4 × {max_fifteen}) = {phf15:.4f}")
+# ====================== 任务5：线路驾驶员信息批量导出（10分） ======================
+print("\n" + "="*50)
+print("任务5：线路驾驶员信息批量导出")
+print("="*50)
+
+# 1. 筛选1101-1120线路
+target_routes = df_onboard[(df_onboard['线路号'] >= 1101) & (df_onboard['线路号'] <= 1120)]
+# 2. 创建文件夹
+folder_name = '线路驾驶员信息'
+if not os.path.exists(folder_name):
+    os.makedirs(folder_name)
+
+# 3. 批量导出txt文件
+for route in range(1101, 1121):
+    # 筛选当前线路数据
+    route_data = target_routes[target_routes['线路号'] == route]
+    # 去重车辆-驾驶员对应关系
+    driver_map = route_data[['车辆编号', '驾驶员编号']].drop_duplicates()
+    # 文件路径
+    file_path = os.path.join(folder_name, f'{route}.txt')
+    # 写入文件
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(f"线路号: {route}\n")
+        f.write("车辆编号驾驶员编号\n")
+        for _, row in driver_map.iterrows():
+            f.write(f"{row['车辆编号']}{row['驾驶员编号']}\n")
+    # 打印路径
+    print(f"已生成：{file_path}")
+
+print("✅ 20个线路驾驶员文件全部导出完成")
+
 
 
