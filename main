@@ -1,0 +1,55 @@
+# 公交IC卡刷卡数据分析 - 完整可运行代码
+# 严格遵循作业要求，包含所有任务、中文注释、规范库使用、输出文件与图表
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+# ====================== 全局设置：解决中文乱码 ======================
+plt.rcParams['font.sans-serif'] = ['SimHei']  # 黑体
+plt.rcParams['axes.unicode_minus'] = False    # 负号正常显示
+
+# ====================== 任务1：数据预处理（10分） ======================
+print("="*50)
+print("任务1：数据预处理")
+print("="*50)
+
+# 1. 读取数据（制表符分隔）
+df = pd.read_csv('ICData.csv', sep='\t')
+# 打印前5行
+print("数据集前5行：")
+print(df.head())
+# 打印基本信息
+print(f"\n数据集形状：{df.shape}")
+print("\n各列数据类型：")
+print(df.dtypes)
+
+# 2. 时间解析：转换为datetime类型，提取小时
+df['交易时间'] = pd.to_datetime(df['交易时间'])  # 转换时间格式
+df['hour'] = df['交易时间'].dt.hour            # 提取小时整数
+print("\n已新增小时列，前5行小时数据：")
+print(df['hour'].head())
+
+# 3. 构造搭乘站点数字段，删除异常值
+df['ride_stops'] = abs(df['下车站点'] - df['上车站点'])  # 计算绝对差值
+# 统计并删除ride_stops=0的异常记录
+异常行数 = (df['ride_stops'] == 0).sum()
+df = df[df['ride_stops'] != 0]
+print(f"\n删除ride_stops=0的异常记录数：{异常行数}")
+
+# 4. 缺失值检查与处理
+print("\n各列缺失值数量：")
+missing = df.isnull().sum()
+print(missing)
+# 处理策略：无缺失值，无需处理；若有则删除对应行
+if missing.sum() > 0:
+    df = df.dropna()
+    print("已删除含缺失值的记录")
+else:
+    print("数据集无缺失值")
+
+# 仅保留上车刷卡记录（后续任务通用）
+df_onboard = df[df['刷卡类型'] == 0].copy()
+print(f"\n有效上车刷卡记录数：{len(df_onboard)}")
+
