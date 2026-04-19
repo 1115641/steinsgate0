@@ -52,4 +52,54 @@ else:
 # 仅保留上车刷卡记录（后续任务通用）
 df_onboard = df[df['刷卡类型'] == 0].copy()
 print(f"\n有效上车刷卡记录数：{len(df_onboard)}")
+# ====================== 任务2：时间分布分析（20分） ======================
+print("\n" + "="*50)
+print("任务2：时间分布分析")
+print("="*50)
+
+# (a) 早晚时段刷卡量统计（必须使用numpy）
+# 转换为numpy数组用于布尔索引
+hour_arr = df_onboard['hour'].values
+# 早峰前：hour < 7
+morning_before = np.sum(hour_arr < 7)
+# 深夜时段：hour >= 22
+night_late = np.sum(hour_arr >= 22)
+# 总刷卡量
+total = len(df_onboard)
+# 计算占比
+pct_morning = morning_before / total * 100
+pct_night = night_late / total * 100
+
+print(f"早峰前时段（<7点）刷卡量：{morning_before} 次，占比：{pct_morning:.2f}%")
+print(f"深夜时段（≥22点）刷卡量：{night_late} 次，占比：{pct_night:.2f}%")
+
+# (b) 24小时刷卡量分布可视化（matplotlib）
+# 统计每小时刷卡量
+hour_count = df_onboard['hour'].value_counts().sort_index()
+hours = hour_count.index
+counts = hour_count.values
+
+# 创建画布
+plt.figure(figsize=(12, 6))
+# 绘制柱状图，高亮特殊时段
+for h, c in zip(hours, counts):
+    if h < 7:
+        plt.bar(h, c, color='orange', label='早峰前' if h == 0 else "")
+    elif h >= 22:
+        plt.bar(h, c, color='purple', label='深夜' if h == 22 else "")
+    else:
+        plt.bar(h, c, color='skyblue', label='正常时段' if h == 7 else "")
+
+# 图表设置
+plt.title('24小时公交刷卡量分布', fontsize=14)
+plt.xlabel('小时', fontsize=12)
+plt.ylabel('刷卡量（次）', fontsize=12)
+plt.xticks(np.arange(0, 24, 2))  # x轴步长2
+plt.grid(axis='y', linestyle='--', alpha=0.7)  # 水平网格线
+plt.legend()
+# 保存图片
+plt.savefig('hour_distribution.png', dpi=150)
+plt.close()
+print("已保存24小时分布图表：hour_distribution.png")
+
 
