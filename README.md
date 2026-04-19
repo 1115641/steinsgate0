@@ -283,4 +283,3 @@ print("\n" + "="*60)
 print("🎉 所有任务执行完成！生成文件如下：")
 print("1. 图表：hour_distribution.png、route_stops.png、performance_heatmap.png")
 print("2. 文件夹：线路驾驶员信息（含20个txt文件）")
-print("="*60)当前文件内容过长，豆包只阅读了前 1%。
