@@ -147,4 +147,41 @@ plt.tight_layout()
 plt.savefig('route_stops.png', dpi=150)
 plt.close()
 print("已保存线路站点分析图表：route_stops.png")
+# ====================== 任务4：高峰小时系数计算（20分） ======================
+print("\n" + "="*50)
+print("任务4：高峰小时系数计算")
+print("="*50)
+
+# 1. 识别高峰小时
+hourly_count = df_onboard['hour'].value_counts().sort_index()
+peak_hour = hourly_count.idxmax()  # 刷卡量最大的小时
+peak_count = hourly_count.max()
+print(f"高峰小时：{peak_hour:02d}:00 ~ {peak_hour+1:02d}:00，刷卡量：{peak_count} 次")
+
+# 筛选高峰小时的数据
+peak_hour_data = df_onboard[df_onboard['hour'] == peak_hour].copy()
+
+# 2. 5分钟粒度统计，计算PHF5
+# 提取分钟，计算5分钟窗口
+peak_hour_data['minute'] = peak_hour_data['交易时间'].dt.minute
+peak_hour_data['5min_window'] = (peak_hour_data['minute'] // 5) * 5
+# 统计5分钟窗口刷卡量
+five_min_count = peak_hour_data['5min_window'].value_counts().sort_index()
+max_five = five_min_count.max()
+max_five_window = five_min_count.idxmax()
+# 计算PHF5
+phf5 = peak_count / (12 * max_five)
+print(f"最大5分钟刷卡量（{peak_hour:02d}:{max_five_window:02d}~{peak_hour:02d}:{max_five_window+5:02d}）：{max_five} 次")
+print(f"PHF5 = {peak_count} / (12 × {max_five}) = {phf5:.4f}")
+
+# 3. 15分钟粒度统计，计算PHF15
+peak_hour_data['15min_window'] = (peak_hour_data['minute'] // 15) * 15
+fifteen_min_count = peak_hour_data['15min_window'].value_counts().sort_index()
+max_fifteen = fifteen_min_count.max()
+max_fifteen_window = fifteen_min_count.idxmax()
+# 计算PHF15
+phf15 = peak_count / (4 * max_fifteen)
+print(f"最大15分钟刷卡量（{peak_hour:02d}:{max_fifteen_window:02d}~{peak_hour:02d}:{max_fifteen_window+15:02d}）：{max_fifteen} 次")
+print(f"PHF15 = {peak_count} / (4 × {max_fifteen}) = {phf15:.4f}")
+
 
